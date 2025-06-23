@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neón Sportivo - Plataforma Unificada</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+    <link
+      rel="stylesheet"
+      as="style"
+      onload="this.rel='stylesheet'"
+      href="https://fonts.googleapis.com/css2?display=swap&family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&family=Space+Grotesk%3Awght%40400%3B500%3B700"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <style>
+        /* Estilos Generales y de Navegación */
+        .page-content { display: none; }
+        .page-content.active { display: block; }
+        .league-tab.active-league { border-bottom-color: #dcedf3 !important; color: white !important; }
+        .main-layout-grid { display: flex; flex-direction: row; flex-grow: 1; }
+        .content-area-wrapper { flex-grow: 1; overflow-y: auto; }
+        
+        /* Estilos para Tarjetas de Eventos y Secciones de Apuestas */
+        .event-card { background-color: #1f2937; border-radius: 0.75rem; padding: 1rem; margin-bottom: 1rem; }
+        .event-card h4 { font-size: 1.125rem; font-weight: 600; color: white; margin-bottom: 0.5rem; }
+        .event-card p { font-size: 0.875rem; color: #9db5be; margin-bottom: 0.25rem; }
+        .bet-type-section { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #374151; }
+        .bet-type-section h5 { font-size: 1rem; font-weight: 500; color: #d1d5db; margin-bottom: 0.5rem; }
+        
+        /* Estilos para Botones de Apuestas y Selección */
+        .bet-option button, .select-other-button, .bet-market-button {
+            background-color: #374151; color: white; padding: 0.5rem 0.75rem; 
+            border-radius: 0.375rem; font-size: 0.875rem; transition: background-color 0.2s;
+            margin-top: 0.25rem; border: 1px solid transparent; /* Borde sutil */
+        }
+        .bet-option button:hover, .select-other-button:hover, .bet-market-button:hover {
+            background-color: #4b5563; 
+        }
+        .bet-option button.selected-odd, .f1-event-row.selected-odd, .bet-market-button.selected-odd {
+            background-color: #10B981 !important; color: white !important; border-color: #059669 !important;
+        }
+        .f1-event-row.selected-odd td { color: white !important; }
+        .f1-event-row:hover { background-color: #2c3a4f; cursor: pointer; }
+        .select-other-button { background-color: #4f46e5; }
+        .select-other-button:hover { background-color: #4338ca; }
+
+        /* Estilos para el Modal */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); padding-top: 60px; }
+        .modal-content { background-color: #1f2937; margin: 5% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 0.5rem; color: white; }
+        .modal-header { padding-bottom: 10px; border-bottom: 1px solid #374151; font-size: 1.25rem; font-weight: 600; }
+        .modal-body { padding-top: 10px; max-height: 60vh; overflow-y: auto; }
+        .modal-footer { padding-top: 10px; border-top: 1px solid #374151; text-align: right; }
+        .close-button { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
+        .close-button:hover, .close-button:focus { color: white; text-decoration: none; cursor: pointer; }
+        .modal-list-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #374151; }
+        .modal-list-item:last-child { border-bottom: none; }
+        .modal-list-item button { margin-left: 0.5rem; }
+
+        /* Estilos para el Bet Slip */
+        #bet-slip-container { width: 320px; min-width: 320px; background-color: #1f2937; color: white; padding: 1rem; border-left: 1px solid #374151; overflow-y: auto; display: none; }
+        #bet-slip-container.active { display: block; }
+        .bet-slip-item { background-color: #374151; padding: 0.75rem; border-radius: 0.375rem; margin-bottom: 0.75rem; }
+        .bet-slip-item input[type="number"] {
+            background-color: #4b5563; border: 1px solid #6b7280; color: white; 
+            border-radius: 0.25rem; padding: 0.25rem 0.5rem; width: 6rem; font-size: 0.875rem; 
+            -moz-appearance: textfield; 
+        }
+        .bet-slip-item input[type=number]::-webkit-inner-spin-button, 
+        .bet-slip-item input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; margin: 0;
+        }
+        /* Estilos para la vista detallada de MLB */
+        .mlb-match-detail-header { padding: 1rem; background-color: #2c3a4f; border-radius: 0.5rem; margin-bottom: 1rem; text-align: center;}
+        .mlb-match-detail-header h3 { font-size: 1.5rem; font-weight: bold; color: white;}
+        .mlb-match-detail-header p { font-size: 0.875rem; color: #9db5be; }
+        .mlb-bet-tabs button { background-color: #374151; color: #9db5be; padding: 0.5rem 1rem; border-radius: 0.375rem 0.375rem 0 0; margin-right: 0.25rem; font-size:0.875rem; }
+        .mlb-bet-tabs button.active-market-tab { background-color: #4b5563; color: white; font-weight: bold; }
+        .mlb-market-content { display: none; padding: 1rem; border: 1px solid #374151; border-top: none; border-radius: 0 0 0.5rem 0.5rem;}
+        .mlb-market-content.active { display: block; }
+        .mlb-market-row { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #4b5563;}
+        .mlb-market-row:last-child { border-bottom: none; }
+        .mlb-market-row span { flex-grow: 1; }
+    </style>
+</head>
+<body class="bg-[#101e23] dark text-white" style='font-family: "Space Grotesk", "Noto Sans", sans-serif;'>
+    <div class="relative flex size-full min-h-screen flex-col group/design-root overflow-x-hidden">
+        <div class="layout-container flex h-full grow flex-col">
+            <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#223f49] px-4 md:px-10 py-3 bg-[#101e23] sticky top-0 z-50">
+                <div class="flex items-center gap-4 md:gap-8">
+                    <div class="flex items-center gap-2 md:gap-4 text-white">
+                        <div class="size-4 md:size-5">
+                            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M24 4C25.7818 14.2173 33.7827 22.2182 44 24C33.7827 25.7818 25.7818 33.7827 24 44C22.2182 33.7827 14.2173 25.7818 4 24C14.2173 22.2182 22.2182 14.2173 24 4Z" fill="currentColor"></path>
+                            </svg>
+                        </div>
+                        <h2 class="text-white text-md md:text-lg font-bold leading-tight tracking-[-0.015em]">Neón Sportivo</h2>
+                    </div>
+                    <nav class="hidden md:flex items-center gap-5 lg:gap-9">
+                        <a class="text-white text-sm font-medium leading-normal hover:text-gray-300" href="#" onclick="showPage('home', this)">Home</a>
+                        <a class="text-white text-sm font-medium leading-normal hover:text-gray-300" href="#" onclick="showPage('live', this)">Live</a>
+                        <a class="text-white text-sm font-medium leading-normal hover:text-gray-300" href="#" onclick="showPage('my-bets', this)">My Bets</a>
+                        <a class="text-white text-sm font-medium leading-normal hover:text-gray-300" href="#" onclick="showPage('promotions', this)">Promotions</a>
+                        <a class="text-white text-sm font-medium leading-normal hover:text-gray-300" href="#" onclick="showPage('baseball', this)">Baseball</a>
+                         <a class="text-white text-sm font-medium leading-normal hover:text-gray-300" href="#" onclick="showPage('basketball', this)">Basketball</a>
+                         <a class="text-white text-sm font-medium leading-normal hover:text-gray-300" href="#" onclick="showPage('formula1', this)">Formula 1</a>
+                    </nav>
+                </div>
+                <div class="flex flex-1 justify-end items-center gap-2 md:gap-8">
+                    <label class="hidden sm:flex flex-col min-w-32 !h-10 max-w-64">
+                        <div class="flex w-full flex-1 items-stretch rounded-xl h-full">
+                            <div class="text-[#90bbcb] flex border-none bg-[#223f49] items-center justify-center pl-3 md:pl-4 rounded-l-xl border-r-0" data-icon="MagnifyingGlass" data-size="20px" data-weight="regular">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor" viewBox="0 0 256 256"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path></svg>
+                            </div>
+                            <input placeholder="Search" class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-0 border-none bg-[#223f49] focus:border-none h-full placeholder:text-[#90bbcb] px-2 md:px-4 rounded-l-none border-l-0 pl-2 text-sm md:text-base font-normal leading-normal" value=""/>
+                        </div>
+                    </label>
+                    <button class="hidden sm:flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 bg-[#223f49] text-white gap-2 text-sm font-bold leading-normal tracking-[-0.015em] min-w-0 px-2.5">
+                        <div class="text-white" data-icon="Gear" data-size="20px" data-weight="regular">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor" viewBox="0 0 256 256"><path d="M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm88-29.84q.06-2.16,0-4.32l14.92-18.64a8,8,0,0,0,1.48-7.06,107.21,107.21,0,0,0-10.88-26.25,8,8,0,0,0-6-3.93l-23.72-2.64q-1.48-1.56-3-3L186,40.54a8,8,0,0,0-3.94-6,107.71,107.71,0,0,0-26.25-10.87,8,8,0,0,0-7.06,1.49L130.16,40Q128,40,125.84,40L107.2,25.11a8,8,0,0,0-7.06-1.48A107.6,107.6,0,0,0,73.89,34.51a8,8,0,0,0-3.93,6L67.32,64.27q-1.56,1.49-3,3L40.54,70a8,8,0,0,0-6,3.94,107.71,107.71,0,0,0-10.87,26.25,8,8,0,0,0,1.49,7.06L40,125.84Q40,128,40,130.16L25.11,148.8a8,8,0,0,0-1.48,7.06,107.21,107.21,0,0,0,10.88,26.25,8,8,0,0,0,6,3.93l23.72,2.64q1.49,1.56,3,3L70,215.46a8,8,0,0,0,3.94,6,107.71,107.71,0,0,0,26.25,10.87,8,8,0,0,0,7.06-1.49L125.84,216q2.16.06,4.32,0l18.64,14.92a8,8,0,0,0,7.06,1.48,107.21,107.21,0,0,0,26.25-10.88,8,8,0,0,0,3.93-6l2.64-23.72q1.56-1.48,3-3L215.46,186a8,8,0,0,0,6-3.94,107.71,107.71,0,0,0,10.87-26.25,8,8,0,0,0-1.49-7.06Zm-16.1-6.5a73.93,73.93,0,0,1,0,8.68,8,8,0,0,0,1.74,5.48l14.19,17.73a91.57,91.57,0,0,1-6.23,15L187,173.11a8,8,0,0,0-5.1,2.64,74.11,74.11,0,0,1-6.14,6.14,8,8,0,0,0-2.64,5.1l-2.51,22.58a91.32,91.32,0,0,1-15,6.23l-17.74-14.19a8,8,0,0,0-5-1.75h-.48a73.93,73.93,0,0,1-8.68,0,8,8,0,0,0-5.48,1.74L100.45,215.8a91.57,91.57,0,0,1-15-6.23L82.89,187a8,8,0,0,0-2.64-5.1,74.11,74.11,0,0,1-6.14-6.14,8,8,0,0,0-5.1-2.64L46.43,170.6a91.32,91.32,0,0,1-6.23-15l14.19-17.74a8,8,0,0,0,1.74-5.48,73.93,73.93,0,0,1,0-8.68,8,8,0,0,0-1.74-5.48L40.2,100.45a91.57,91.57,0,0,1,6.23-15L69,82.89a8,8,0,0,0,5.1-2.64,74.11,74.11,0,0,1,6.14-6.14A8,8,0,0,0,82.89,69L85.4,46.43a91.32,91.32,0,0,1,15-6.23l17.74,14.19a8,8,0,0,0,5.48,1.74,73.93,73.93,0,0,1,8.68,0,8,8,0,0,0,5.48-1.74L155.55,40.2a91.57,91.57,0,0,1,15,6.23L173.11,69a8,8,0,0,0,2.64,5.1,74.11,74.11,0,0,1,6.14,6.14,8,8,0,0,0,5.1,2.64l22.58,2.51a91.32,91.32,0,0,1,6.23,15l-14.19,17.74A8,8,0,0,0,199.87,123.66Z"></path></svg>
+                        </div>
+                    </button>
+                    <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" style='background-image: url("https://placehold.co/40x40/777/FFF?text=U");'></div>
+                     <button class="md:hidden text-white" onclick="toggleMobileMenu()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256"><path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,88H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM216,184H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"></path></svg>
+                    </button>
+                </div>
+            </header>
+            <nav id="mobile-menu" class="hidden md:hidden bg-[#101e23] border-b border-solid border-b-[#223f49] px-4 py-3">
+                <a class="block text-white text-sm py-2 hover:text-gray-300" href="#" onclick="showPage('home', this); toggleMobileMenu();">Home</a>
+                <a class="block text-white text-sm py-2 hover:text-gray-300" href="#" onclick="showPage('live', this); toggleMobileMenu();">Live</a>
+                <a class="block text-white text-sm py-2 hover:text-gray-300" href="#" onclick="showPage('my-bets', this); toggleMobileMenu();">My Bets</a>
+                <a class="block text-white text-sm py-2 hover:text-gray-300" href="#" onclick="showPage('promotions', this); toggleMobileMenu();">Promotions</a>
+                <a class="block text-white text-sm py-2 hover:text-gray-300" href="#" onclick="showPage('baseball', this); toggleMobileMenu();">Baseball</a>
+                <a class="block text-white text-sm py-2 hover:text-gray-300" href="#" onclick="showPage('basketball', this); toggleMobileMenu();">Basketball</a>
+                <a class="block text-white text-sm py-2 hover:text-gray-300" href="#" onclick="showPage('formula1', this); toggleMobileMenu();">Formula 1</a>
+            </nav>
+            
+            <div class="main-layout-grid"> 
+                <div class="content-area-wrapper px-4 md:px-8 lg:px-10 py-5"> 
+                    <div class="layout-content-container flex flex-col max-w-[960px] mx-auto flex-1">
+                        <div id="home-content" class="page-content active">
+                            <h2 class="text-white tracking-light text-[28px] font-bold leading-tight px-4 text-left pb-3 pt-5">Sports</h2>
+                            <div class="p-4">
+                                <div class="flex flex-col sm:flex-row items-stretch justify-between gap-4 rounded-xl bg-[#141c1f] p-4">
+                                    <div class="flex flex-[2_2_0px] flex-col gap-4">
+                                        <div class="flex flex-col gap-1">
+                                            <p class="text-white text-base font-bold leading-tight">Formula 1</p>
+                                            <p class="text-[#90bbcb] text-sm font-normal leading-normal">View Formula 1 Events</p>
+                                        </div>
+                                        <button onclick="showPage('formula1', this)" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-8 px-4 flex-row-reverse bg-[#223f49] text-white text-sm font-medium leading-normal w-fit hover:bg-[#305f72]">
+                                            <span class="truncate">View Formula 1 Events</span>
+                                        </button>
+                                    </div>
+                                    <div class="w-full sm:flex-1 h-40 sm:h-auto bg-center bg-no-repeat aspect-video bg-cover rounded-xl" style='background-image: url("https://placehold.co/300x150/FF1801/FFFFFF?text=Formula+1");'></div>
+                                </div>
+                            </div>
+                            <div class="p-4">
+                                <div class="flex flex-col sm:flex-row items-stretch justify-between gap-4 rounded-xl bg-[#141c1f] p-4">
+                                    <div class="flex flex-[2_2_0px] flex-col gap-4">
+                                        <div class="flex flex-col gap-1">
+                                            <p class="text-white text-base font-bold leading-tight">Baseball</p>
+                                            <p class="text-[#90bbcb] text-sm font-normal leading-normal">View Baseball Events</p>
+                                        </div>
+                                        <button onclick="showPage('baseball', this)" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-8 px-4 flex-row-reverse bg-[#223f49] text-white text-sm font-medium leading-normal w-fit hover:bg-[#305f72]">
+                                            <span class="truncate">View Baseball Events</span>
+                                        </button>
+                                    </div>
+                                    <div class="w-full sm:flex-1 h-40 sm:h-auto bg-center bg-no-repeat aspect-video bg-cover rounded-xl" style='background-image: url("https://placehold.co/300x150/003087/FFFFFF?text=Baseball");'></div>
+                                </div>
+                            </div>
+                            <div class="p-4">
+                                <div class="flex flex-col sm:flex-row items-stretch justify-between gap-4 rounded-xl bg-[#141c1f] p-4">
+                                    <div class="flex flex-[2_2_0px] flex-col gap-4">
+                                        <div class="flex flex-col gap-1">
+                                            <p class="text-white text-base font-bold leading-tight">Basketball</p>
+                                            <p class="text-[#90bbcb] text-sm font-normal leading-normal">View Basketball Events</p>
+                                        </div>
+                                        <button onclick="showPage('basketball', this)" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-8 px-4 flex-row-reverse bg-[#223f49] text-white text-sm font-medium leading-normal w-fit hover:bg-[#305f72]">
+                                            <span class="truncate">View Basketball Events</span>
+                                        </button>
+                                    </div>
+                                    <div class="w-full sm:flex-1 h-40 sm:h-auto bg-center bg-no-repeat aspect-video bg-cover rounded-xl" style='background-image: url("https://placehold.co/300x150/552583/FFFFFF?text=Basketball");'></div>
+                                </div>
+                            </div>
+                             <div id="live-content-placeholder" class="p-4 text-center text-gray-400">Contenido de "Live" irá aquí.</div>
+                            <div id="my-bets-content-placeholder" class="p-4 text-center text-gray-400">Contenido de "My Bets" irá aquí.</div>
+                            <div id="promotions-content-placeholder" class="p-4 text-center text-gray-400">Contenido de "Promotions" irá aquí.</div>
+                        </div>
+    
+                        <div id="baseball-content" class="page-content bg-[#141c1f]">
+                            <h2 class="text-white tracking-light text-[28px] font-bold leading-tight px-4 text-left pb-3 pt-5">Baseball</h2>
+                            <div class="pb-3">
+                                <div class="flex border-b border-[#3d545c] px-4 gap-8 overflow-x-auto">
+                                    <a class="league-tab flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-[#9db5be] pb-[13px] pt-4 hover:text-white whitespace-nowrap" href="#" onclick="showLeagueContent('baseball', 'all', this)">
+                                        <p class="text-sm font-bold leading-normal tracking-[0.015em]">All</p>
+                                    </a>
+                                    <a class="league-tab flex flex-col items-center justify-center border-b-[3px] border-b-[#dcedf3] text-white pb-[13px] pt-4 active-league whitespace-nowrap" href="#" onclick="showLeagueContent('baseball', 'mlb', this)">
+                                        <p class="text-sm font-bold leading-normal tracking-[0.015em]">MLB</p>
+                                    </a>
+                                    </div>
+                            </div>
+                            <div id="baseball-all-content" class="league-content hidden p-4">Lista de todos los partidos de Baseball.</div>
+                            <div id="baseball-mlb-content" class="league-content active p-4">
+                                <h3 class="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-2">Próximos Partidos MLB</h3>
+                                <div id="mlb-upcoming-matches-list" class="space-y-3">
+                                    </div>
+                                <div id="mlb-match-detail-view" class="hidden mt-6">
+                                    </div>
+                            </div>
+                            </div>
+    
+                        <div id="basketball-content" class="page-content bg-[#141c1f]">
+                           <h2 class="text-white tracking-light text-[28px] font-bold leading-tight px-4 text-left pb-3 pt-5">Basketball</h2>
+                            <div class="pb-3">
+                                <div class="flex border-b border-[#3d545c] px-4 gap-8 overflow-x-auto">
+                                    <a class="league-tab flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-[#9db5be] pb-[13px] pt-4 hover:text-white whitespace-nowrap" href="#" onclick="showLeagueContent('basketball', 'all', this)">
+                                        <p class="text-sm font-bold leading-normal tracking-[0.015em]">All</p>
+                                    </a>
+                                    <a class="league-tab flex flex-col items-center justify-center border-b-[3px] border-b-[#dcedf3] text-white pb-[13px] pt-4 active-league whitespace-nowrap" href="#" onclick="showLeagueContent('basketball', 'nba', this)">
+                                        <p class="text-sm font-bold leading-normal tracking-[0.015em]">NBA</p>
+                                    </a>
+                                    </div>
+                            </div>
+                            <div id="basketball-all-content" class="league-content hidden p-4">Lista de todos los partidos de Basketball.</div>
+                            <div id="basketball-nba-content" class="league-content active p-4">
+                                <h3 class="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-2">Próximos Partidos NBA</h3>
+                                <div id="nba-upcoming-matches-list" class="space-y-3">
+                                    </div>
+                                </div>
+                            </div>
+    
+                        <div id="formula1-content" class="page-content bg-[#141c1f]">
+                            <h2 class="text-white tracking-light text-[28px] font-bold leading-tight px-4 text-left pb-3 pt-5">Formula 1</h2>
+                            <div class="pb-3">
+                                 <div class="flex border-b border-[#3d545c] px-4 gap-8 overflow-x-auto">
+                                    <a class="league-tab flex flex-col items-center justify-center border-b-[3px] border-b-[#dcedf3] text-white pb-[13px] pt-4 active-league whitespace-nowrap" href="#" onclick="showLeagueContent('formula1', 'proximos-gps', this)">
+                                        <p class="text-sm font-bold leading-normal tracking-[0.015em]">Próximos GPs</p>
+                                    </a>
+                                    <a class="league-tab flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-[#9db5be] pb-[13px] pt-4 hover:text-white whitespace-nowrap" href="#" onclick="showLeagueContent('formula1', 'campeonato-pilotos', this)">
+                                        <p class="text-sm font-bold leading-normal tracking-[0.015em]">Campeonato Pilotos</p>
+                                    </a>
+                                    <a class="league-tab flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-[#9db5be] pb-[13px] pt-4 hover:text-white whitespace-nowrap" href="#" onclick="showLeagueContent('formula1', 'campeonato-constructores', this)">
+                                        <p class="text-sm font-bold leading-normal tracking-[0.015em]">Campeonato Constructores</p>
+                                    </a>
+                                </div>
+                            </div>
+    
+                            <div id="formula1-proximos-gps-content" class="league-content active p-4">
+                                <h3 class="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-2">Próximos Grandes Premios</h3>
+                                <div class="event-card">
+                                    <div class="f1-event-row" onclick="handleF1RowClick(this, 'Gran Premio de Canadá', 'Ganador Carrera', 'M. Verstappen', 1.75)">
+                                        <h4>Gran Premio de Canadá</h4>
+                                        <p>Circuito Gilles Villeneuve - Montreal</p>
+                                        <p>Fecha: 9 de Junio, 2025, 2:00 PM</p>
+                                    </div>
+                                    <div class="bet-type-section">
+                                        <h5>Ganador Carrera:</h5>
+                                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 bet-option">
+                                            <button data-sport="F1" data-event="Gran Premio de Canadá" data-type="Ganador Carrera" data-selection="M. Verstappen" data-odds="1.75" onclick="handleBetSelection(this)">M. Verstappen @ 1.75</button>
+                                            <button data-sport="F1" data-event="Gran Premio de Canadá" data-type="Ganador Carrera" data-selection="C. Leclerc" data-odds="4.00" onclick="handleBetSelection(this)">C. Leclerc @ 4.00</button>
+                                            <button data-sport="F1" data-event="Gran Premio de Canadá" data-type="Ganador Carrera" data-selection="L. Norris" data-odds="6.50" onclick="handleBetSelection(this)">L. Norris @ 6.50</button>
+                                        </div>
+                                        <button class="select-other-button mt-2" onclick="openF1Modal('winner', 'Gran Premio de Canadá')">Seleccionar otro piloto</button>
+                                    </div>
+                                    <div class="bet-type-section">
+                                        <h5>Podio:</h5>
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <div class="bet-option"><span>M. Verstappen:</span> 
+                                                <button data-sport="F1" data-event="Gran Premio de Canadá" data-type="Podio" data-selection="M. Verstappen - Podio SÍ" data-odds="1.20" onclick="handleBetSelection(this)">Sí @ 1.20</button> 
+                                                <button data-sport="F1" data-event="Gran Premio de Canadá" data-type="Podio" data-selection="M. Verstappen - Podio NO" data-odds="4.00" onclick="handleBetSelection(this)">No @ 4.00</button>
+                                            </div>
+                                            <div class="bet-option"><span>C. Leclerc:</span> 
+                                                <button data-sport="F1" data-event="Gran Premio de Canadá" data-type="Podio" data-selection="C. Leclerc - Podio SÍ" data-odds="1.50" onclick="handleBetSelection(this)">Sí @ 1.50</button> 
+                                                <button data-sport="F1" data-event="Gran Premio de Canadá" data-type="Podio" data-selection="C. Leclerc - Podio NO" data-odds="2.50" onclick="handleBetSelection(this)">No @ 2.50</button>
+                                            </div>
+                                        </div>
+                                        <button class="select-other-button mt-2" onclick="openF1Modal('podium', 'Gran Premio de Canadá')">Seleccionar piloto y opción (Sí/No)</button>
+                                    </div>
+                                    <div class="bet-type-section">
+                                        <h5>Pole Position:</h5>
+                                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 bet-option">
+                                            <button data-sport="F1" data-event="Gran Premio de Canadá" data-type="Pole Position" data-selection="M. Verstappen" data-odds="2.00" onclick="handleBetSelection(this)">M. Verstappen @ 2.00</button>
+                                            <button data-sport="F1" data-event="Gran Premio de Canadá" data-type="Pole Position" data-selection="C. Leclerc" data-odds="3.50" onclick="handleBetSelection(this)">C. Leclerc @ 3.50</button>
+                                        </div>
+                                        <button class="select-other-button mt-2" onclick="openF1Modal('pole', 'Gran Premio de Canadá')">Seleccionar otro piloto</button>
+                                    </div>
+                                    <div class="bet-type-section">
+                                        <h5>Vuelta Rápida:</h5>
+                                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 bet-option">
+                                            <button data-sport="F1" data-event="Gran Premio de Canadá" data-type="Vuelta Rápida" data-selection="L. Norris" data-odds="5.50" onclick="handleBetSelection(this)">L. Norris @ 5.50</button>
+                                            <button data-sport="F1" data-event="Gran Premio de Canadá" data-type="Vuelta Rápida" data-selection="M. Verstappen" data-odds="3.00" onclick="handleBetSelection(this)">M. Verstappen @ 3.00</button>
+                                        </div>
+                                        <button class="select-other-button mt-2" onclick="openF1Modal('fastest-lap', 'Gran Premio de Canadá')">Seleccionar otro piloto</button>
+                                    </div>
+                                    <div class="bet-type-section">
+                                        <h5>Apuestas de Proposición Adicionales:</h5>
+                                        <div class="space-y-2">
+                                            <div class="bet-option flex justify-between items-center f1-event-row" onclick="handleF1PropRowClick(this, 'Gran Premio de Canadá', 'Safety Car', 'Safety Car SÍ', 1.65)">
+                                                <span>Safety Car Durante la Carrera:</span> 
+                                                <div>
+                                                    <button data-sport="F1" data-event="Gran Premio de Canadá" data-type="Safety Car" data-selection="Safety Car SÍ" data-odds="1.65" class="mr-1">Sí @ 1.65</button> 
+                                                    <button data-sport="F1" data-event="Gran Premio de Canadá" data-type="Safety Car" data-selection="Safety Car NO" data-odds="2.15" onclick="event.stopPropagation(); handleBetSelection(this)">No @ 2.15</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                </div>
+    
+                            <div id="formula1-campeonato-pilotos-content" class="league-content hidden p-4">
+                                <h3 class="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-2">Campeonato de Pilotos 2025 (Futuros)</h3>
+                                <div class="event-card" id="f1-drivers-championship-list">
+                                    </div>
+                            </div>
+                            <div id="formula1-campeonato-constructores-content" class="league-content hidden p-4">
+                                 <h3 class="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-2">Campeonato de Constructores 2025 (Futuros)</h3>
+                                <div class="event-card" id="f1-constructors-championship-list">
+                                    </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <aside id="bet-slip-container" class="bg-[#141c1f]">
+                    <div class="p-4 sticky top-[calc(theme(spacing.16)+1px)] h-[calc(100vh-theme(spacing.16)-1px)] overflow-y-auto"> <h3 class="text-xl font-semibold mb-3">Selecciones</h3>
+                        <div class="text-sm mb-2">Saldo Simulado: <span id="simulated-balance">$1000.00</span></div>
+                        <hr class="border-gray-600 mb-3">
+                        
+                        <div id="bet-slip-items-list" class="space-y-3 mb-4 max-h-[40vh] overflow-y-auto">
+                            </div>
+
+                        <div id="parlay-section" class="mt-4 hidden">
+                            <h4 class="text-md font-medium mb-1">Apuesta Combinada (Parlay)</h4>
+                            <div class="flex justify-between items-center text-sm mb-1">
+                                <span>Cuota Total Combinada:</span>
+                                <span id="parlay-total-odds" class="font-semibold">1.00</span>
+                            </div>
+                            <label for="parlay-stake" class="block text-xs text-gray-400 mb-1">Monto Combinada:</label>
+                            <input type="number" id="parlay-stake" class="bet-slip-item-input w-full text-sm p-1.5 rounded" placeholder="0.00" oninput="updateBetSlipTotals()">
+                            <div class="flex justify-between items-center text-sm mt-1">
+                                <span>Ganancia Potencial Combinada:</span>
+                                <span id="parlay-potential-win" class="font-semibold text-emerald-400">$0.00</span>
+                            </div>
+                        </div>
+                        
+                        <hr class="border-gray-600 my-4">
+                        <div class="space-y-1 text-sm">
+                            <div class="flex justify-between">
+                                <span>Total Selecciones:</span>
+                                <span id="total-selections-count">0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Importe Total Apostado:</span>
+                                <span id="total-stake-amount" class="font-semibold">$0.00</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="font-semibold">Ganancia Potencial Total:</span>
+                                <span id="total-potential-win" class="font-bold text-lg text-emerald-400">$0.00</span>
+                            </div>
+                        </div>
+
+                        <button id="place-bet-button" 
+                                class="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
+                                onclick="placeBetSimulation()"
+                                disabled>
+                            Realizar Apuesta
+                        </button>
+                        <div id="bet-slip-message" class="text-center text-xs mt-2"></div>
+                    </div>
+                </aside>
+            </div> </div>
+    </div>
+
+    <div id="f1SelectionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close-button" onclick="closeF1Modal()">&times;</span>
+                <h4 id="f1ModalTitle">Seleccionar Piloto</h4>
+            </div>
+            <div class="modal-body" id="f1ModalBody">
+                </div>
+            <div class="modal-footer">
+                <button class="select-other-button px-4 py-2" onclick="closeF1Modal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Datos Simulados (F1, MLB, NBA) ---
+        const f1Pilots = [
+            { name: "Max Verstappen", team: "Red Bull Racing", odds: { winner: 1.75, podium: 1.20, pole: 2.00, fastest: 3.00, championship: 1.50 } },
+            { name: "Charles Leclerc", team: "Ferrari", odds: { winner: 4.00, podium: 1.50, pole: 3.50, fastest: 4.50, championship: 4.50 } },
+            { name: "Lando Norris", team: "McLaren", odds: { winner: 6.50, podium: 1.80, pole: 5.00, fastest: 5.50, championship: 8.00 } },
+            { name: "Sergio Perez", team: "Red Bull Racing", odds: { winner: 12.00, podium: 2.50, pole: 10.00, fastest: 10.00, championship: 20.00 } },
+            { name: "Lewis Hamilton", team: "Mercedes", odds: { winner: 15.00, podium: 3.00, pole: 12.00, fastest: 8.00, championship: 12.00 } },
+            { name: "George Russell", team: "Mercedes", odds: { winner: 18.00, podium: 3.50, pole: 15.00, fastest: 10.00, championship: 25.00 } },
+            { name: "Oscar Piastri", team: "McLaren", odds: { winner: 20.00, podium: 4.00, pole: 18.00, fastest: 12.00, championship: 30.00 } },
+            { name: "Carlos Sainz", team: "Ferrari", odds: { winner: 22.00, podium: 4.50, pole: 20.00, fastest: 15.00, championship: 28.00 } },
+            { name: "Fernando Alonso", team: "Aston Martin", odds: { winner: 30.00, podium: 6.00, pole: 25.00, fastest: 20.00, championship: 50.00 } },
+        ];
+        const f1Constructors = [
+            { name: "Red Bull Racing", odds: { championship: 1.30 } },
+            { name: "Ferrari", odds: { championship: 5.00 } },
+            { name: "McLaren", odds: { championship: 7.50 } },
+            { name: "Mercedes", odds: { championship: 10.00 } },
+            { name: "Aston Martin", odds: { championship: 50.00 } },
+        ];
+        const mlbMatches = [
+            { 
+                id: "mlb1", 
+                teams: ["New York Yankees", "Los Angeles Dodgers"], 
+                date: "05 de Junio, 2025, 7:05 PM",
+                status: "Próximo",
+                markets: {
+                    moneyLine: [{ selection: "New York Yankees", odds: 1.80 }, { selection: "Los Angeles Dodgers", odds: 2.00 }],
+                    totalRuns: [
+                        { line: 7.5, overOdds: 1.95, underOdds: 1.85 },
+                        { line: 8.5, overOdds: 1.90, underOdds: 1.90 },
+                        { line: 9.5, overOdds: 1.85, underOdds: 1.95 }
+                    ],
+                    runLine: [
+                        { selection: "New York Yankees -1.5", odds: 2.50, value: -1.5 }, 
+                        { selection: "Los Angeles Dodgers +1.5", odds: 1.65, value: 1.5 }
+                    ],
+                    firstInning: [
+                        { team: "New York Yankees", type: "Carrera", yesOdds: 3.50, noOdds: 1.30 },
+                        { team: "New York Yankees", type: "Hit", yesOdds: 1.70, noOdds: 2.10 },
+                        { team: "Los Angeles Dodgers", type: "Carrera", yesOdds: 3.80, noOdds: 1.25 },
+                    ],
+                    playerProps: [
+                        { player: "Aaron Judge", type: "Home Run", selection: "Aaron Judge Más de 0.5 HR", odds: 3.50 },
+                        { player: "Shohei Ohtani", type: "Home Run", selection: "Shohei Ohtani Más de 0.5 HR", odds: 3.20 },
+                    ]
+                }
+            },
+            { 
+                id: "mlb2", 
+                teams: ["Boston Red Sox", "Toronto Blue Jays"], 
+                date: "10 de Junio, 2025, 7:10 PM",
+                status: "Próximo",
+                markets: {
+                    moneyLine: [{ selection: "Boston Red Sox", odds: 1.85 }, { selection: "Toronto Blue Jays", odds: 2.05 }],
+                    totalRuns: [{ line: 9.0, overOdds: 1.90, underOdds: 1.90 }],
+                    runLine: [
+                        { selection: "Boston Red Sox -1.5", odds: 2.60, value: -1.5 }, 
+                        { selection: "Toronto Blue Jays +1.5", odds: 1.55, value: 1.5 }
+                    ]
+                }
+            },
+        ];
+        const nbaMatches = [
+            {
+                id: "nba1",
+                teams: ["Boston Celtics", "Miami Heat"],
+                date: "05 de Junio, 2025, 8:30 PM (Game 5)",
+                status: "Próximo",
+                markets: {
+                    moneyLine: [{ selection: "Boston Celtics", odds: 1.60 }, { selection: "Miami Heat", odds: 2.40 }],
+                    totalPoints: { line: 210.5, overOdds: 1.91, underOdds: 1.91 },
+                    pointSpread: [
+                        { selection: "Boston Celtics -5.5", odds: 1.91, value: -5.5 },
+                        { selection: "Miami Heat +5.5", odds: 1.91, value: 5.5 }
+                    ]
+                }
+            },
+             {
+                id: "nba2",
+                teams: ["Golden State Warriors", "Denver Nuggets"],
+                date: "12 de Junio, 2025, 10:00 PM (Game 4)",
+                status: "Próximo",
+                markets: {
+                    moneyLine: [{ selection: "Golden State Warriors", odds: 2.10 }, { selection: "Denver Nuggets", odds: 1.75 }],
+                    totalPoints: { line: 220.0, overOdds: 1.90, underOdds: 1.90 },
+                    pointSpread: [
+                        { selection: "Golden State Warriors +2.5", odds: 1.91, value: 2.5 },
+                        { selection: "Denver Nuggets -2.5", odds: 1.91, value: -2.5 }
+                    ]
+                }
+            }
+        ];
+
+
+        // --- Bet Slip State & Logic (sin cambios significativos, solo se adapta a nuevos data-attributes) ---
+        let betSlipItems = [];
+        let nextBetSlipItemId = 1;
+        const betSlipContainer = document.getElementById('bet-slip-container');
+        const betSlipItemsList = document.getElementById('bet-slip-items-list');
+        const parlaySection = document.getElementById('parlay-section');
+        const parlayTotalOddsEl = document.getElementById('parlay-total-odds');
+        const parlayStakeEl = document.getElementById('parlay-stake');
+        const parlayPotentialWinEl = document.getElementById('parlay-potential-win');
+        const totalSelectionsCountEl = document.getElementById('total-selections-count');
+        const totalStakeAmountEl = document.getElementById('total-stake-amount');
+        const totalPotentialWinEl = document.getElementById('total-potential-win');
+        const placeBetButton = document.getElementById('place-bet-button');
+        const betSlipMessageEl = document.getElementById('bet-slip-message');
+
+        function handleBetSelection(buttonElement) {
+            const sport = buttonElement.dataset.sport;
+            const eventName = buttonElement.dataset.event;
+            const betType = buttonElement.dataset.type;
+            const selectionName = buttonElement.dataset.selection;
+            const odds = parseFloat(buttonElement.dataset.odds);
+            const value = buttonElement.dataset.value || null; 
+            const detailSelection = buttonElement.dataset.detailselection || selectionName;
+
+
+            const betDetail = {
+                sport,
+                eventName,
+                betType,
+                selectionName, // El nombre principal de la selección (ej. "NY Yankees", "Over", "M. Verstappen - Podio SÍ")
+                detailSelection: detailSelection, // Para mostrar en el boleto (ej. "NY Yankees", "Over 8.5")
+                valueHandicapTotal: value,
+                odds
+            };
+            addToBetSlip(betDetail, buttonElement);
+        }
+        
+        function handleF1RowClick(rowElement, eventName, betType, selectionName, odds) {
+            const betDetail = { sport: "F1", eventName, betType, selectionName, odds, detailSelection: selectionName };
+            addToBetSlip(betDetail, rowElement); 
+        }
+
+        function handleF1PropRowClick(rowElement, eventName, betType, defaultSelectionName, defaultOdds) {
+            const betDetail = { sport: "F1", eventName, betType, selectionName: defaultSelectionName, odds: defaultOdds, detailSelection: defaultSelectionName };
+            addToBetSlip(betDetail, rowElement);
+        }
+
+
+        function addToBetSlip(betDetail, clickedButtonElement = null) {
+            const existingBetIndex = betSlipItems.findIndex(item => 
+                item.eventName === betDetail.eventName && 
+                item.betType === betDetail.betType &&
+                item.selectionName === betDetail.selectionName &&
+                item.valueHandicapTotal === betDetail.valueHandicapTotal // Asegurar que el valor del handicap/total sea el mismo
+            );
+
+            if (existingBetIndex > -1) { 
+                betSlipItems.splice(existingBetIndex, 1);
+                if (clickedButtonElement) {
+                    clickedButtonElement.classList.remove('selected-odd');
+                }
+            } else { 
+                const newItem = {
+                    id: nextBetSlipItemId++,
+                    sport: betDetail.sport,
+                    eventName: betDetail.eventName,
+                    betType: betDetail.betType,
+                    selectionName: betDetail.selectionName, // Se usa para la lógica de toggle
+                    detailSelection: betDetail.detailSelection, // Se usa para mostrar en el boleto
+                    valueHandicapTotal: betDetail.valueHandicapTotal || null,
+                    odds: betDetail.odds,
+                    stake: 0, 
+                };
+                betSlipItems.push(newItem);
+                if (clickedButtonElement) {
+                    clickedButtonElement.classList.add('selected-odd');
+                }
+            }
+            
+            if (betSlipItems.length > 0 && (!betSlipContainer.classList.contains('active'))) {
+                betSlipContainer.classList.add('active');
+            } else if (betSlipItems.length === 0) {
+                 betSlipContainer.classList.remove('active');
+            }
+            renderBetSlip();
+            updateBetSlipTotals();
+        }
+
+        function removeFromBetSlip(itemId) {
+            const itemIndex = betSlipItems.findIndex(item => item.id === itemId);
+            if (itemIndex > -1) {
+                const removedItem = betSlipItems.splice(itemIndex, 1)[0];
+                // Selector más específico para desmarcar el botón correcto
+                const originalButton = document.querySelector(
+                    `button[data-sport="${removedItem.sport}"][data-event="${removedItem.eventName}"][data-type="${removedItem.betType}"][data-selection="${removedItem.selectionName}"]` +
+                    (removedItem.valueHandicapTotal ? `[data-value="${removedItem.valueHandicapTotal}"]` : '')
+                );
+                if (originalButton) {
+                    originalButton.classList.remove('selected-odd');
+                }
+                const originalRow = document.querySelector(`.f1-event-row.selected-odd[onclick*="'${removedItem.selectionName}'"]`);
+                 if (originalRow && originalRow.classList.contains('selected-odd') && 
+                    originalRow.getAttribute('onclick').includes(removedItem.eventName) &&
+                    originalRow.getAttribute('onclick').includes(removedItem.betType) &&
+                    originalRow.getAttribute('onclick').includes(removedItem.selectionName)) {
+                    originalRow.classList.remove('selected-odd');
+                }
+            }
+             if (betSlipItems.length === 0) {
+                 betSlipContainer.classList.remove('active');
+            }
+            renderBetSlip();
+            updateBetSlipTotals();
+        }
+
+        function renderBetSlip() {
+            betSlipItemsList.innerHTML = '';
+            betSlipItems.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'bet-slip-item text-xs';
+                // Usar item.detailSelection para mostrar en el boleto
+                let displaySelectionInSlip = item.detailSelection; 
+
+                div.innerHTML = `
+                    <div class="flex justify-between items-start mb-1">
+                        <div>
+                            <p class="font-medium text-sm">${displaySelectionInSlip}</p>
+                            <p class="text-gray-400">${item.betType} - ${item.eventName}</p>
+                        </div>
+                        <button onclick="removeFromBetSlip(${item.id})" class="text-red-400 hover:text-red-300 text-lg">&times;</button>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="font-semibold text-emerald-400">@ ${item.odds.toFixed(2)}</span>
+                        <div>
+                            <label for="stake-${item.id}" class="sr-only">Monto</label>
+                            <input type="number" id="stake-${item.id}" value="${item.stake > 0 ? item.stake.toFixed(2) : ''}" 
+                                   oninput="updateItemStake(${item.id}, this.value)" 
+                                   class="bet-slip-item-input w-20 text-right" placeholder="Monto">
+                        </div>
+                    </div>
+                    <div class="text-right text-gray-300 mt-0.5">Potencial: $<span id="potential-${item.id}">${(item.stake * item.odds).toFixed(2)}</span></div>
+                `;
+                betSlipItemsList.appendChild(div);
+            });
+
+            parlaySection.style.display = betSlipItems.length > 1 ? 'block' : 'none';
+            updateBetSlipTotals();
+        }
+
+        // Las funciones updateItemStake, parlayStakeEl.addEventListener, updateBetSlipTotals, placeBetSimulation
+        // y las de manejo del Modal F1 permanecen mayormente sin cambios lógicos, solo se adaptan a los nuevos data-attributes si es necesario.
+        // ... (Estas funciones se mantienen como en la v3, con ajustes menores si son necesarios por los nuevos data-attributes) ...
+        function updateItemStake(itemId, stakeValue) {
+            const item = betSlipItems.find(i => i.id === itemId);
+            if (item) {
+                item.stake = parseFloat(stakeValue) || 0;
+                document.getElementById(`potential-${item.id}`).textContent = (item.stake * item.odds).toFixed(2);
+            }
+            if (parlayStakeEl.value !== '' && parseFloat(stakeValue) > 0) {
+                parlayStakeEl.value = '';
+            }
+            updateBetSlipTotals();
+        }
+        
+        parlayStakeEl.addEventListener('input', () => {
+            if (parseFloat(parlayStakeEl.value) > 0) {
+                betSlipItems.forEach(item => {
+                    item.stake = 0;
+                    const stakeInput = document.getElementById(`stake-${item.id}`);
+                    if (stakeInput) stakeInput.value = '';
+                    document.getElementById(`potential-${item.id}`).textContent = (0).toFixed(2);
+                });
+            }
+            updateBetSlipTotals();
+        });
+
+
+        function updateBetSlipTotals() {
+            let totalStake = 0;
+            let totalPotentialWin = 0;
+            let parlayOdds = 1;
+            
+            betSlipItems.forEach(item => {
+                totalStake += item.stake;
+                totalPotentialWin += item.stake * item.odds;
+                parlayOdds *= item.odds;
+            });
+
+            const parlayStake = parseFloat(parlayStakeEl.value) || 0;
+            if (betSlipItems.length > 1 && parlayStake > 0) {
+                totalStake = parlayStake; 
+                totalPotentialWin = parlayStake * parlayOdds;
+                parlayPotentialWinEl.textContent = `$${(parlayStake * parlayOdds).toFixed(2)}`;
+            } else {
+                parlayPotentialWinEl.textContent = `$0.00`; 
+            }
+            
+            parlayTotalOddsEl.textContent = betSlipItems.length > 0 ? parlayOdds.toFixed(2) : '1.00';
+            totalSelectionsCountEl.textContent = betSlipItems.length;
+            totalStakeAmountEl.textContent = `$${totalStake.toFixed(2)}`;
+            totalPotentialWinEl.textContent = `$${totalPotentialWin.toFixed(2)}`;
+
+            placeBetButton.disabled = !(betSlipItems.length > 0 && totalStake > 0);
+        }
+
+        function placeBetSimulation() {
+            if (placeBetButton.disabled) return;
+
+            betSlipMessageEl.textContent = 'Apuestas realizadas con éxito. ¡Mucha suerte!';
+            betSlipMessageEl.classList.remove('text-red-400');
+            betSlipMessageEl.classList.add('text-emerald-400');
+
+            setTimeout(() => {
+                betSlipItems.forEach(item => {
+                     const originalButton = document.querySelector(
+                        `button[data-sport="${item.sport}"][data-event="${item.eventName}"][data-type="${item.betType}"][data-selection="${item.selectionName}"]`  +
+                        (item.valueHandicapTotal ? `[data-value="${item.valueHandicapTotal}"]` : '')
+                        );
+                    if (originalButton) {
+                        originalButton.classList.remove('selected-odd');
+                    }
+                    const originalRow = document.querySelector(`.f1-event-row.selected-odd[onclick*="'${item.selectionName}'"]`);
+                     if (originalRow && originalRow.classList.contains('selected-odd') && 
+                        originalRow.getAttribute('onclick').includes(item.eventName) &&
+                        originalRow.getAttribute('onclick').includes(item.betType) &&
+                        originalRow.getAttribute('onclick').includes(item.selectionName)) {
+                        originalRow.classList.remove('selected-odd');
+                    }
+                });
+                betSlipItems = [];
+                nextBetSlipItemId = 1;
+                parlayStakeEl.value = '';
+                renderBetSlip();
+                updateBetSlipTotals();
+                betSlipMessageEl.textContent = '';
+                betSlipContainer.classList.remove('active');
+            }, 2000);
+        }
+
+        const modal = document.getElementById('f1SelectionModal');
+        const modalTitle = document.getElementById('f1ModalTitle');
+        const modalBody = document.getElementById('f1ModalBody');
+
+        function openF1Modal(betType, eventName) {
+            modalTitle.textContent = `Seleccionar para: ${eventName} - ${getBetTypeSpanish(betType)}`;
+            modalBody.innerHTML = ''; 
+
+            let targetArray = f1Pilots;
+            if (betType === 'championship_constructor') {
+                targetArray = f1Constructors;
+            }
+
+            targetArray.forEach(entity => { 
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'modal-list-item';
+                let entityOdd;
+                let selectionNameForBet; // Usado para la lógica interna de la apuesta
+                let detailSelectionForBet; // Usado para mostrar en el boleto
+                let buttonHTML = '';
+
+                switch (betType) {
+                    case 'winner':
+                        entityOdd = entity.odds.winner;
+                        selectionNameForBet = `${entity.name}`; // Para data-selection
+                        detailSelectionForBet = `${entity.name}`; // Para mostrar
+                        buttonHTML = `<button class="bet-option" data-sport="F1" data-event="${eventName}" data-type="${getBetTypeSpanish(betType)}" data-selection="${selectionNameForBet}" data-detailselection="${detailSelectionForBet}" data-odds="${entityOdd.toFixed(2)}" onclick="selectF1BetFromModal(this)">@ ${entityOdd.toFixed(2)}</button>`;
+                        break;
+                    case 'podium':
+                        entityOdd = entity.odds.podium;
+                        let noPodiumOdd = parseFloat((1 / (1 - (1/entityOdd))).toFixed(2)); 
+                        if (isNaN(noPodiumOdd) || !isFinite(noPodiumOdd)) noPodiumOdd = entityOdd * 2; 
+                        
+                        buttonHTML = `<div>
+                                        <button class="bet-option" data-sport="F1" data-event="${eventName}" data-type="${getBetTypeSpanish(betType)}" data-selection="${entity.name} - Podio SÍ" data-detailselection="${entity.name} - Podio SÍ" data-odds="${entityOdd.toFixed(2)}" onclick="selectF1BetFromModal(this)">Sí @ ${entityOdd.toFixed(2)}</button>
+                                        <button class="bet-option" data-sport="F1" data-event="${eventName}" data-type="${getBetTypeSpanish(betType)}" data-selection="${entity.name} - Podio NO" data-detailselection="${entity.name} - Podio NO" data-odds="${noPodiumOdd.toFixed(2)}" onclick="selectF1BetFromModal(this)">No @ ${noPodiumOdd.toFixed(2)}</button> 
+                                      </div>`;
+                        break;
+                    case 'pole':
+                        entityOdd = entity.odds.pole;
+                        selectionNameForBet = `${entity.name}`;
+                        detailSelectionForBet = `${entity.name}`;
+                        buttonHTML = `<button class="bet-option" data-sport="F1" data-event="${eventName}" data-type="${getBetTypeSpanish(betType)}" data-selection="${selectionNameForBet}" data-detailselection="${detailSelectionForBet}" data-odds="${entityOdd.toFixed(2)}" onclick="selectF1BetFromModal(this)">@ ${entityOdd.toFixed(2)}</button>`;
+                        break;
+                    case 'fastest-lap':
+                        entityOdd = entity.odds.fastest;
+                        selectionNameForBet = `${entity.name}`;
+                        detailSelectionForBet = `${entity.name}`;
+                        buttonHTML = `<button class="bet-option" data-sport="F1" data-event="${eventName}" data-type="${getBetTypeSpanish(betType)}" data-selection="${selectionNameForBet}" data-detailselection="${detailSelectionForBet}" data-odds="${entityOdd.toFixed(2)}" onclick="selectF1BetFromModal(this)">@ ${entityOdd.toFixed(2)}</button>`;
+                        break;
+                     case 'championship_driver':
+                        entityOdd = entity.odds.championship;
+                        selectionNameForBet = `${entity.name} - Campeón Pilotos`;
+                        detailSelectionForBet = selectionNameForBet;
+                         buttonHTML = `<button class="bet-option" data-sport="F1" data-event="Campeonato Pilotos 2025" data-type="Campeonato Pilotos" data-selection="${selectionNameForBet}" data-detailselection="${detailSelectionForBet}" data-odds="${entityOdd.toFixed(2)}" onclick="selectF1BetFromModal(this)">@ ${entityOdd.toFixed(2)}</button>`;
+                        break;
+                    case 'championship_constructor':
+                        entityOdd = entity.odds.championship;
+                        selectionNameForBet = `${entity.name} - Campeón Constructores`;
+                        detailSelectionForBet = selectionNameForBet;
+                        buttonHTML = `<button class="bet-option" data-sport="F1" data-event="Campeonato Constructores 2025" data-type="Campeonato Constructores" data-selection="${selectionNameForBet}" data-detailselection="${detailSelectionForBet}" data-odds="${entityOdd.toFixed(2)}" onclick="selectF1BetFromModal(this)">@ ${entityOdd.toFixed(2)}</button>`;
+                        break;
+                }
+                itemDiv.innerHTML = `<span>${entity.name} ${entity.team && betType === 'championship_driver' ? '('+entity.team+')' : ''}</span> ${buttonHTML}`;
+                if (buttonHTML) modalBody.appendChild(itemDiv);
+            });
+            modal.style.display = "block";
+        }
+        
+        function selectF1BetFromModal(buttonElement) {
+            handleBetSelection(buttonElement); 
+            closeF1Modal();
+        }
+
+        function closeF1Modal() {
+            modal.style.display = "none";
+        }
+
+        function getBetTypeSpanish(betType) {
+            switch (betType) {
+                case 'winner': return 'Ganador Carrera';
+                case 'podium': return 'Podio';
+                case 'pole': return 'Pole Position';
+                case 'fastest-lap': return 'Vuelta Rápida';
+                case 'championship_driver': return 'Campeonato Pilotos';
+                case 'championship_constructor': return 'Campeonato Constructores';
+                default: return '';
+            }
+        }
+        
+        // --- Lógica de Navegación y MLB/NBA (adaptada) ---
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function showPage(pageId, clickedElement) {
+            const pages = document.querySelectorAll('.page-content');
+            pages.forEach(page => {
+                page.classList.remove('active');
+            });
+
+            const activePage = document.getElementById(pageId + '-content');
+            const homePage = document.getElementById('home-content');
+            
+            if (activePage) {
+                activePage.classList.add('active');
+            } else {
+                const placeholderId = pageId + '-content-placeholder';
+                const placeholderPage = document.getElementById(placeholderId);
+                if (placeholderPage && homePage) {
+                    homePage.classList.add('active');
+                } else if (homePage) {
+                    homePage.classList.add('active'); 
+                }
+            }
+            
+            const navLinks = document.querySelectorAll('header nav a');
+            navLinks.forEach(link => {
+                link.classList.remove('text-gray-300', 'font-bold');
+                link.classList.add('text-white');
+            });
+
+            if (clickedElement && clickedElement.parentElement.tagName === 'NAV') {
+                 navLinks.forEach(link => { 
+                    if(link.getAttribute('onclick') === clickedElement.getAttribute('onclick')) {
+                        link.classList.add('text-gray-300', 'font-bold');
+                        link.classList.remove('text-white');
+                    }
+                });
+            } else if (!clickedElement && pageId === 'home') {
+                 const homeLink = document.querySelector('header nav a[onclick*="showPage(\'home\'"]');
+                if (homeLink) {
+                    homeLink.classList.add('text-gray-300', 'font-bold');
+                    homeLink.classList.remove('text-white');
+                }
+            }
+             if (clickedElement && clickedElement.tagName === 'BUTTON' && homePage.contains(clickedElement)) {
+                const sportNavLinks = Array.from(navLinks).filter(link => link.getAttribute('onclick').includes(`showPage('${pageId}'`));
+                if(sportNavLinks.length > 0) {
+                    const targetLink = sportNavLinks[0];
+                    navLinks.forEach(link => link.classList.remove('text-gray-300', 'font-bold')); 
+                    targetLink.classList.add('text-gray-300', 'font-bold');
+                    targetLink.classList.remove('text-white');
+                }
+            }
+
+            if (pageId === 'baseball') {
+                renderMLBMatchList();
+                showLeagueContent('baseball', 'mlb', document.querySelector('#baseball-content .league-tab.active-league'));
+            } else if (pageId === 'basketball') {
+                renderNBAMatchList();
+                showLeagueContent('basketball', 'nba', document.querySelector('#basketball-content .league-tab.active-league'));
+            } else if (pageId === 'formula1') {
+                const firstLeagueTab = document.querySelector(`#${pageId}-content .league-tab`);
+                 if (firstLeagueTab) {
+                    const onclickAttr = firstLeagueTab.getAttribute('onclick');
+                    const matches = onclickAttr.match(/showLeagueContent\('([^']*)',\s*'([^']*)'/);
+                    if (matches && matches.length === 3) {
+                         showLeagueContent(matches[1], matches[2], firstLeagueTab);
+                    }
+                }
+                populateF1ChampionshipLists();
+            }
+        }
+
+        function showLeagueContent(sportName, leagueName, clickedElement) {
+            const leagueContents = document.querySelectorAll(`#${sportName}-content .league-content`);
+            leagueContents.forEach(content => {
+                content.classList.remove('active');
+                content.classList.add('hidden');
+            });
+
+            const activeLeagueContent = document.getElementById(`${sportName}-${leagueName}-content`);
+            if (activeLeagueContent) {
+                activeLeagueContent.classList.add('active');
+                activeLeagueContent.classList.remove('hidden');
+                 // Si es MLB y se muestra la lista de partidos, ocultar la vista detallada
+                if (sportName === 'baseball' && leagueName === 'mlb') {
+                    document.getElementById('mlb-match-detail-view').classList.add('hidden');
+                    document.getElementById('mlb-upcoming-matches-list').classList.remove('hidden');
+                }
+            }
+
+
+            const leagueTabs = document.querySelectorAll(`#${sportName}-content .league-tab`);
+            leagueTabs.forEach(tab => {
+                tab.classList.remove('active-league', 'text-white', 'border-b-[#dcedf3]');
+                tab.classList.add('text-[#9db5be]', 'border-b-transparent');
+            });
+            if (clickedElement) {
+                clickedElement.classList.add('active-league', 'text-white', 'border-b-[#dcedf3]');
+                clickedElement.classList.remove('text-[#9db5be]', 'border-b-transparent');
+            }
+        }
+        
+        function populateF1ChampionshipLists() {
+            const driversContainer = document.getElementById('f1-drivers-championship-list');
+            if(driversContainer) { 
+                driversContainer.innerHTML = ''; 
+                f1Pilots.forEach(pilot => {
+                    const pilotDiv = document.createElement('div');
+                    pilotDiv.className = 'bet-option flex justify-between items-center mb-2';
+                    const pilotOddChamp = pilot.odds.championship || pilot.odds.winner * 2.5; 
+                    const selectionName = `${pilot.name} - Campeón Pilotos`;
+                    const detailSelection = selectionName;
+                    pilotDiv.innerHTML = `<span>${pilot.name} (${pilot.team})</span> 
+                                        <button data-sport="F1" data-event="Campeonato Pilotos 2025" data-type="Campeonato Pilotos" data-selection="${selectionName}" data-detailselection="${detailSelection}" data-odds="${pilotOddChamp.toFixed(2)}" onclick="handleBetSelection(this)">
+                                            @ ${pilotOddChamp.toFixed(2)}
+                                        </button>`;
+                    driversContainer.appendChild(pilotDiv);
+                });
+            }
+
+            const constructorsContainer = document.getElementById('f1-constructors-championship-list');
+            if(constructorsContainer) { 
+                constructorsContainer.innerHTML = '';
+                f1Constructors.forEach(team => {
+                    const teamDiv = document.createElement('div');
+                    teamDiv.className = 'bet-option flex justify-between items-center mb-2';
+                    const selectionName = `${team.name} - Campeón Constructores`;
+                    const detailSelection = selectionName;
+                    teamDiv.innerHTML = `<span>${team.name}</span> 
+                                    <button data-sport="F1" data-event="Campeonato Constructores 2025" data-type="Campeonato Constructores" data-selection="${selectionName}" data-detailselection="${detailSelection}" data-odds="${team.odds.championship.toFixed(2)}" onclick="handleBetSelection(this)">
+                                        @ ${team.odds.championship.toFixed(2)}
+                                    </button>`;
+                    constructorsContainer.appendChild(teamDiv);
+                });
+            }
+        }
+        
+        function renderMLBMatchList() {
+            const container = document.getElementById('mlb-upcoming-matches-list');
+            container.innerHTML = ''; // Limpiar lista
+            mlbMatches.filter(match => match.status === "Próximo").slice(0, 5).forEach(match => { // Mostrar solo los próximos, limitado a 5
+                const matchDiv = document.createElement('div');
+                matchDiv.className = 'event-card p-3 hover:bg-[#2c3a4f] cursor-pointer';
+                matchDiv.onclick = () => showMLBMatchDetail(match.id);
+                matchDiv.innerHTML = `
+                    <h4 class="text-md">${match.teams[0]} vs ${match.teams[1]}</h4>
+                    <p class="text-xs">${match.date}</p>
+                `;
+                container.appendChild(matchDiv);
+            });
+        }
+
+        function showMLBMatchDetail(matchId) {
+            const match = mlbMatches.find(m => m.id === matchId);
+            if (!match) return;
+
+            document.getElementById('mlb-upcoming-matches-list').classList.add('hidden');
+            const detailView = document.getElementById('mlb-match-detail-view');
+            detailView.innerHTML = `
+                <div class="mlb-match-detail-header">
+                    <h3>${match.teams[0]} vs ${match.teams[1]}</h3>
+                    <p>${match.date}</p>
+                </div>
+                <div class="mlb-bet-tabs mb-4">
+                    <button class="active-market-tab" onclick="showMLBMarket(this, '${matchId}', 'ganador')">Ganador</button>
+                    <button onclick="showMLBMarket(this, '${matchId}', 'total')">Total</button>
+                    <button onclick="showMLBMarket(this, '${matchId}', 'handicap')">Hándicap</button>
+                    <button onclick="showMLBMarket(this, '${matchId}', '1ra-entrada')">1ª Entrada</button>
+                    <button onclick="showMLBMarket(this, '${matchId}', 'jugador')">Jugador</button>
+                </div>
+                <div id="mlb-market-ganador-${matchId}" class="mlb-market-content active"></div>
+                <div id="mlb-market-total-${matchId}" class="mlb-market-content"></div>
+                <div id="mlb-market-handicap-${matchId}" class="mlb-market-content"></div>
+                <div id="mlb-market-1ra-entrada-${matchId}" class="mlb-market-content"></div>
+                <div id="mlb-market-jugador-${matchId}" class="mlb-market-content"></div>
+            `;
+            detailView.classList.remove('hidden');
+            renderMLBMarketContent(matchId, 'ganador'); // Mostrar el primer tab por defecto
+        }
+        
+        function showMLBMarket(tabElement, matchId, marketType) {
+            const matchDetailView = document.getElementById('mlb-match-detail-view');
+            matchDetailView.querySelectorAll('.mlb-bet-tabs button').forEach(btn => btn.classList.remove('active-market-tab'));
+            tabElement.classList.add('active-market-tab');
+
+            matchDetailView.querySelectorAll('.mlb-market-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(`mlb-market-${marketType}-${matchId}`).classList.add('active');
+            renderMLBMarketContent(matchId, marketType);
+        }
+
+        function renderMLBMarketContent(matchId, marketType) {
+            const match = mlbMatches.find(m => m.id === matchId);
+            const container = document.getElementById(`mlb-market-${marketType}-${matchId}`);
+            if (!match || !container) return;
+            container.innerHTML = ''; // Limpiar
+
+            let contentHTML = '';
+            const eventName = `${match.teams[0]} vs ${match.teams[1]}`;
+
+            switch(marketType) {
+                case 'ganador':
+                    contentHTML += `<h5 class="text-gray-300 mb-2">Money Line:</h5>`;
+                    match.markets.moneyLine.forEach(line => {
+                        contentHTML += `<div class="mlb-market-row"><span>${line.selection}</span><button class="bet-market-button" data-sport="MLB" data-event="${eventName}" data-type="Money Line" data-selection="${line.selection}" data-detailselection="${line.selection}" data-odds="${line.odds}" onclick="handleBetSelection(this)">@ ${line.odds.toFixed(2)}</button></div>`;
+                    });
+                    break;
+                case 'total':
+                    contentHTML += `<h5 class="text-gray-300 mb-2">Total de Carreras:</h5>`;
+                    match.markets.totalRuns.forEach(line => {
+                        contentHTML += `<div class="mlb-market-row">
+                                            <span>Over ${line.line}</span>
+                                            <button class="bet-market-button" data-sport="MLB" data-event="${eventName}" data-type="Total de Carreras" data-selection="Over ${line.line}" data-detailselection="Over ${line.line}" data-value="${line.line}" data-odds="${line.overOdds}" onclick="handleBetSelection(this)">@ ${line.overOdds.toFixed(2)}</button>
+                                        </div>
+                                        <div class="mlb-market-row">
+                                            <span>Under ${line.line}</span>
+                                            <button class="bet-market-button" data-sport="MLB" data-event="${eventName}" data-type="Total de Carreras" data-selection="Under ${line.line}" data-detailselection="Under ${line.line}" data-value="${line.line}" data-odds="${line.underOdds}" onclick="handleBetSelection(this)">@ ${line.underOdds.toFixed(2)}</button>
+                                        </div>`;
+                    });
+                    break;
+                case 'handicap':
+                    contentHTML += `<h5 class="text-gray-300 mb-2">Run Line (Hándicap):</h5>`;
+                     match.markets.runLine.forEach(line => {
+                        const handicapDisplay = `${line.selection.split(" ")[0]} ${line.value > 0 ? '+' : ''}${line.value}`;
+                        contentHTML += `<div class="mlb-market-row"><span>${handicapDisplay}</span><button class="bet-market-button" data-sport="MLB" data-event="${eventName}" data-type="Run Line" data-selection="${line.selection}" data-detailselection="${handicapDisplay}" data-value="${line.value}" data-odds="${line.odds}" onclick="handleBetSelection(this)">@ ${line.odds.toFixed(2)}</button></div>`;
+                    });
+                    break;
+                case '1ra-entrada':
+                    contentHTML += `<h5 class="text-gray-300 mb-2">Apuestas 1ª Entrada:</h5>`;
+                    match.markets.firstInning.forEach(prop => {
+                        contentHTML += `<div class="mlb-market-row">
+                                            <span>${prop.team} - 1ª Entrada - ${prop.type}: Sí</span>
+                                            <button class="bet-market-button" data-sport="MLB" data-event="${eventName}" data-type="1ª Entrada - ${prop.type}" data-selection="${prop.team} - ${prop.type}: SÍ" data-detailselection="${prop.team} - ${prop.type}: SÍ" data-odds="${prop.yesOdds}" onclick="handleBetSelection(this)">@ ${prop.yesOdds.toFixed(2)}</button>
+                                        </div>
+                                        <div class="mlb-market-row">
+                                            <span>${prop.team} - 1ª Entrada - ${prop.type}: No</span>
+                                            <button class="bet-market-button" data-sport="MLB" data-event="${eventName}" data-type="1ª Entrada - ${prop.type}" data-selection="${prop.team} - ${prop.type}: NO" data-detailselection="${prop.team} - ${prop.type}: NO" data-odds="${prop.noOdds}" onclick="handleBetSelection(this)">@ ${prop.noOdds.toFixed(2)}</button>
+                                        </div>`;
+                    });
+                    break;
+                case 'jugador':
+                    contentHTML += `<h5 class="text-gray-300 mb-2">Home Runs por Jugador:</h5>`;
+                    match.markets.playerProps.filter(p => p.type === "Home Run").forEach(prop => {
+                        contentHTML += `<div class="mlb-market-row"><span>${prop.selection}</span><button class="bet-market-button" data-sport="MLB" data-event="${eventName}" data-type="Home Run Jugador" data-selection="${prop.selection}" data-detailselection="${prop.selection}" data-odds="${prop.odds}" onclick="handleBetSelection(this)">@ ${prop.odds.toFixed(2)}</button></div>`;
+                    });
+                    break;
+            }
+            container.innerHTML = contentHTML;
+             // Re-apply selected-odd class to buttons if they are in the bet slip
+            betSlipItems.forEach(slipItem => {
+                if (slipItem.eventName === eventName && slipItem.betType.startsWith(container.id.split('-')[2])) { // Check if market type matches
+                    const btnSelector = `button[data-selection="${slipItem.selectionName}"][data-odds="${slipItem.odds.toFixed(2)}"]` +
+                                        (slipItem.valueHandicapTotal ? `[data-value="${slipItem.valueHandicapTotal}"]` : '');
+                    const btn = container.querySelector(btnSelector);
+                    if (btn) btn.classList.add('selected-odd');
+                }
+            });
+        }
+
+        function renderNBAMatchList() {
+            const container = document.getElementById('nba-upcoming-matches-list');
+            container.innerHTML = ''; // Limpiar
+            nbaMatches.filter(match => match.status === "Próximo").slice(0,3).forEach(match => { // Mostrar solo 3 próximos
+                const matchDiv = document.createElement('div');
+                matchDiv.className = 'event-card'; // No necesita ser clickeable para vista detallada por ahora
+                let marketsHTML = `<div class="bet-type-section"><h5 class="text-gray-300">Money Line:</h5><div class="grid grid-cols-2 gap-2 bet-option">`;
+                match.markets.moneyLine.forEach(line => {
+                    marketsHTML += `<button data-sport="NBA" data-event="${match.teams[0]} vs ${match.teams[1]}" data-type="Money Line" data-selection="${line.selection}" data-detailselection="${line.selection}" data-odds="${line.odds}" onclick="handleBetSelection(this)">${line.selection} @ ${line.odds.toFixed(2)}</button>`;
+                });
+                marketsHTML += `</div></div>`;
+
+                marketsHTML += `<div class="bet-type-section"><h5 class="text-gray-300">Total de Puntos (Línea: ${match.markets.totalPoints.line}):</h5><div class="grid grid-cols-2 gap-2 bet-option">`;
+                marketsHTML += `<button data-sport="NBA" data-event="${match.teams[0]} vs ${match.teams[1]}" data-type="Total de Puntos" data-selection="Over ${match.markets.totalPoints.line}" data-detailselection="Over ${match.markets.totalPoints.line}" data-value="${match.markets.totalPoints.line}" data-odds="${match.markets.totalPoints.overOdds}" onclick="handleBetSelection(this)">Over ${match.markets.totalPoints.line} @ ${match.markets.totalPoints.overOdds.toFixed(2)}</button>`;
+                marketsHTML += `<button data-sport="NBA" data-event="${match.teams[0]} vs ${match.teams[1]}" data-type="Total de Puntos" data-selection="Under ${match.markets.totalPoints.line}" data-detailselection="Under ${match.markets.totalPoints.line}" data-value="${match.markets.totalPoints.line}" data-odds="${match.markets.totalPoints.underOdds}" onclick="handleBetSelection(this)">Under ${match.markets.totalPoints.line} @ ${match.markets.totalPoints.underOdds.toFixed(2)}</button>`;
+                marketsHTML += `</div></div>`;
+                
+                marketsHTML += `<div class="bet-type-section"><h5 class="text-gray-300">Point Spread (Hándicap):</h5><div class="grid grid-cols-2 gap-2 bet-option">`;
+                match.markets.pointSpread.forEach(line => {
+                    const handicapDisplay = `${line.selection.split(" ")[0]} ${line.value > 0 ? '+' : ''}${line.value}`;
+                    marketsHTML += `<button data-sport="NBA" data-event="${match.teams[0]} vs ${match.teams[1]}" data-type="Point Spread" data-selection="${line.selection}" data-detailselection="${handicapDisplay}" data-value="${line.value}" data-odds="${line.odds}" onclick="handleBetSelection(this)">${handicapDisplay} @ ${line.odds.toFixed(2)}</button>`;
+                });
+                marketsHTML += `</div></div>`;
+
+
+                matchDiv.innerHTML = `
+                    <h4>${match.teams[0]} vs ${match.teams[1]}</h4>
+                    <p>${match.date}</p>
+                    ${marketsHTML}
+                `;
+                container.appendChild(matchDiv);
+            });
+        }
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            showPage('home');
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    closeF1Modal();
+                }
+            }
+            if(betSlipContainer) renderBetSlip();
+        });
+    </script>
+</body>
+</html>
