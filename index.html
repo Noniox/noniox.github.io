@@ -60,21 +60,36 @@
         .modal-list-item button { margin-left: 0.5rem; }
 
         /* Estilos para el Bet Slip */
-        #bet-slip-container { width: 320px; min-width: 320px; background-color: #1f2937; color: white; padding: 1rem; border-left: 1px solid #374151; overflow-y: auto; display: none; }
-        #bet-slip-container.active { display: block; }
+        #bet-slip-container {
+            width: 320px; /* Define a fixed width for the bet slip */
+            min-width: 320px; /* Ensure it doesn't shrink below this width */
+            /* background-color: #1f2937; /* Tailwind class 'bg-[#141c1f]' on the element will take precedence */
+            color: white;
+            padding: 1rem;
+            border-left: 1px solid #374151; /* Separator from main content */
+            overflow-y: auto; /* Allow scrolling for bet slip content if it overflows */
+            display: block; /* Make it always visible as a block-level element */
+            /* The main-layout-grid using flex will position this to the right of content-area-wrapper */
+        }
+        /* #bet-slip-container.active { display: block; } /* This rule is no longer needed */
         .bet-slip-item { background-color: #374151; padding: 0.75rem; border-radius: 0.375rem; margin-bottom: 0.75rem; }
         .bet-slip-item input[type="number"] {
-            background-color: #4b5563; border: 1px solid #6b7280; color: #333333;
-            border-radius: 0.25rem; padding: 0.25rem 0.5rem; width: 6rem; font-size: 0.875rem;
+            background-color: white; /* Changed to white */
+            border: 1px solid #6b7280;
+            color: black; /* Changed to black */
+            border-radius: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            width: 6rem;
+            font-size: 0.875rem;
             -moz-appearance: textfield;
         }
         .bet-slip-item input[type=number]::-webkit-inner-spin-button,
         .bet-slip-item input[type=number]::-webkit-outer-spin-button {
             -webkit-appearance: none; margin: 0;
         }
-        #parlay-stake { /* Ensure parlay input text is also dark */
-            color: #333333;
-            background-color: #4b5563; /* Match other input background if needed */
+        #parlay-stake { /* Ensure parlay input text is also dark, matching above */
+            color: black; /* Changed to black */
+            background-color: white; /* Changed to white */
             border: 1px solid #6b7280; /* Match other input border if needed */
         }
         /* Estilos para la vista detallada de MLB */
@@ -192,9 +207,41 @@
                                     <div class="w-full sm:flex-1 h-40 sm:h-auto bg-center bg-no-repeat aspect-video bg-cover rounded-xl" style='background-image: url("https://placehold.co/300x150/552583/FFFFFF?text=Basketball");'></div>
                                 </div>
                             </div>
+                            <div class="p-4"> <!-- Soccer Card Start -->
+                                <div class="flex flex-col sm:flex-row items-stretch justify-between gap-4 rounded-xl bg-[#141c1f] p-4">
+                                    <div class="flex flex-[2_2_0px] flex-col gap-4">
+                                        <div class="flex flex-col gap-1">
+                                            <p class="text-white text-base font-bold leading-tight">Soccer</p>
+                                            <p class="text-[#90bbcb] text-sm font-normal leading-normal">View Soccer Events</p>
+                                        </div>
+                                        <button onclick="showPage('soccer', this)" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-8 px-4 flex-row-reverse bg-[#223f49] text-white text-sm font-medium leading-normal w-fit hover:bg-[#305f72]">
+                                            <span class="truncate">View Soccer Events</span>
+                                        </button>
+                                    </div>
+                                    <div class="w-full sm:flex-1 h-40 sm:h-auto bg-center bg-no-repeat aspect-video bg-cover rounded-xl" style='background-image: url("https://placehold.co/300x150/008000/FFFFFF?text=Soccer");'></div>
+                                </div>
+                            </div> <!-- Soccer Card End -->
                              <div id="live-content-placeholder" class="p-4 text-center text-gray-400">Contenido de "Live" irá aquí.</div>
-                            <div id="my-bets-content-placeholder" class="p-4 text-center text-gray-400">Contenido de "My Bets" irá aquí.</div>
+                            {/* Removed my-bets-content-placeholder from here */}
                             <div id="promotions-content-placeholder" class="p-4 text-center text-gray-400">Contenido de "Promotions" irá aquí.</div>
+                        </div>
+
+                        <div id="my-bets-content" class="page-content bg-[#141c1f]">
+                            <h2 class="text-white tracking-light text-[28px] font-bold leading-tight px-4 text-left pb-3 pt-5">My Bets</h2>
+                            <div class="pb-3">
+                                <div class="flex border-b border-[#3d545c] px-4 gap-8 overflow-x-auto">
+                                    <a class="league-tab flex flex-col items-center justify-center border-b-[3px] border-b-[#dcedf3] text-white pb-[13px] pt-4 active-league whitespace-nowrap" href="#" onclick="filterMyBets('open', this); return false;">
+                                        <p class="text-sm font-bold leading-normal tracking-[0.015em]">Open Bets</p>
+                                    </a>
+                                    <a class="league-tab flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-[#9db5be] pb-[13px] pt-4 hover:text-white whitespace-nowrap" href="#" onclick="filterMyBets('settled', this); return false;">
+                                        <p class="text-sm font-bold leading-normal tracking-[0.015em]">Settled Bets</p>
+                                    </a>
+                                </div>
+                            </div>
+                            <div id="my-bets-list-container" class="p-4 space-y-4">
+                                <!-- Bets will be rendered here by JavaScript -->
+                                <p class="text-gray-400" id="no-bets-message">No bets to display in this section.</p> <!-- Default message -->
+                            </div>
                         </div>
 
                         <div id="baseball-content" class="page-content bg-[#141c1f]">
@@ -258,7 +305,7 @@
                             <div id="formula1-proximos-gps-content" class="league-content active p-4">
                                 <h3 class="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-2">Próximos Grandes Premios</h3>
                                 <div class="event-card">
-                                    <div class="f1-event-row" onclick="handleF1RowClick(this, 'Gran Premio de Canadá', 'Ganador Carrera', 'M. Verstappen', 1.75)">
+                                    <div class="f1-event-row"> {/* onclick removed */}
                                         <h4>Gran Premio de Canadá</h4>
                                         <p>Circuito Gilles Villeneuve - Montreal</p>
                                         <p>Fecha: 9 de Junio, 2025, 2:00 PM</p>
@@ -587,6 +634,8 @@
         // --- Bet Slip State & Logic ---
         let betSlipItems = [];
         let nextBetSlipItemId = 1;
+        let placedBets = []; // Global array for placed bets
+        let currentMyBetsFilter = 'open'; // Default filter for My Bets page
         const betSlipContainer = document.getElementById('bet-slip-container');
         const betSlipItemsList = document.getElementById('bet-slip-items-list');
         const parlaySection = document.getElementById('parlay-section');
@@ -780,27 +829,73 @@
         function placeBetSimulation() {
             if (placeBetButton.disabled) return;
 
+            const parlayStake = parseFloat(parlayStakeEl.value) || 0;
+            const now = new Date();
+
+            if (parlayStake > 0 && betSlipItems.length > 1) {
+                // Process as a parlay bet
+                let parlayTotalOdds = 1;
+                betSlipItems.forEach(item => parlayTotalOdds *= item.odds);
+                const parlayBet = {
+                    id: `bet-${now.getTime()}-${Math.random().toString(16).slice(2)}`,
+                    type: 'parlay',
+                    items: betSlipItems.map(bsItem => ({ // Store copies
+                        sport: bsItem.sport,
+                        eventName: bsItem.eventName,
+                        betType: bsItem.betType,
+                        selectionName: bsItem.selectionName,
+                        detailSelection: bsItem.detailSelection,
+                        odds: bsItem.odds
+                    })),
+                    totalStake: parlayStake,
+                    totalOdds: parlayTotalOdds,
+                    potentialWinnings: parlayStake * parlayTotalOdds,
+                    status: 'Open', // 'Open', 'Won', 'Lost'
+                    datePlaced: now.toISOString()
+                };
+                placedBets.push(parlayBet);
+            } else {
+                // Process as single bets
+                betSlipItems.forEach(item => {
+                    if (item.stake > 0) {
+                        const singleBet = {
+                            id: `bet-${now.getTime()}-${item.id}-${Math.random().toString(16).slice(2)}`,
+                            type: 'single',
+                            items: [{ // Store as an array even for singles for consistency
+                                sport: item.sport,
+                                eventName: item.eventName,
+                                betType: item.betType,
+                                selectionName: item.selectionName,
+                                detailSelection: item.detailSelection,
+                                odds: item.odds
+                            }],
+                            totalStake: item.stake,
+                            totalOdds: item.odds, // For single, totalOdds is item.odds
+                            potentialWinnings: item.stake * item.odds,
+                            status: 'Open',
+                            datePlaced: now.toISOString()
+                        };
+                        placedBets.push(singleBet);
+                    }
+                });
+            }
+
+            // console.log("Placed Bets:", JSON.stringify(placedBets, null, 2)); // For debugging
+
             betSlipMessageEl.textContent = 'Apuestas realizadas con éxito. ¡Mucha suerte!';
             betSlipMessageEl.classList.remove('text-red-400');
             betSlipMessageEl.classList.add('text-emerald-400');
 
             setTimeout(() => {
-                betSlipItems.forEach(item => {
-                    const originalElement = document.querySelector(
-                        `[data-sport="${item.sport}"][data-event="${item.eventName}"][data-type="${item.betType}"][data-selection="${item.selectionName}"]` +
-                        (item.valueHandicapTotal ? `[data-value="${item.valueHandicapTotal}"]` : '')
-                    );
-                    if (originalElement) {
-                        originalElement.classList.remove('selected-odd');
-                    }
-                });
+                // Clear selected classes from UI elements
+                document.querySelectorAll('.selected-odd').forEach(el => el.classList.remove('selected-odd'));
+
                 betSlipItems = [];
                 nextBetSlipItemId = 1;
                 parlayStakeEl.value = '';
-                renderBetSlip();
-                updateBetSlipTotals();
+                renderBetSlip(); // This will also call updateBetSlipTotals
                 betSlipMessageEl.textContent = '';
-                betSlipContainer.classList.remove('active');
+                // betSlipContainer.classList.remove('active'); // No longer needed for display toggle
             }, 2000);
         }
 
@@ -998,6 +1093,15 @@
                               showLeagueContent(matches[1], matches[2], genericFirstTab);
                          }
                     }
+                }
+            } else if (pageId === 'my-bets') {
+                // Ensure the default filter ("Open Bets") is active and bets are rendered.
+                // The 'Open Bets' tab is the first tab in #my-bets-content by default.
+                const openBetsTab = document.querySelector('#my-bets-content .league-tab[onclick*="filterMyBets(\'open\'"]');
+                if (openBetsTab) {
+                    filterMyBets('open', openBetsTab); // This sets the filter, styles tab, and calls renderMyBets()
+                } else {
+                    renderMyBets(); // Fallback if tab not found, though it should be.
                 }
             }
         }
@@ -1291,6 +1395,106 @@
             }
             if(betSlipContainer) renderBetSlip();
         });
+
+        function filterMyBets(filterType, clickedElement) {
+            currentMyBetsFilter = filterType;
+            const tabs = document.querySelectorAll('#my-bets-content .league-tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active-league', 'text-white', 'border-b-[#dcedf3]');
+                tab.classList.add('text-[#9db5be]', 'border-b-transparent');
+            });
+            if (clickedElement) {
+                clickedElement.classList.add('active-league', 'text-white', 'border-b-[#dcedf3]');
+                clickedElement.classList.remove('text-[#9db5be]', 'border-b-transparent');
+            }
+            renderMyBets();
+        }
+
+        function renderMyBets() {
+            const container = document.getElementById('my-bets-list-container');
+            const noBetsMessage = document.getElementById('no-bets-message'); // Make sure this ID exists in the HTML
+            if (!container) return;
+
+            // Ensure noBetsMessage element is correctly handled
+            if (!noBetsMessage && container.querySelector('#no-bets-message')) {
+                 // If it was cleared with container.innerHTML, it might need to be re-created or handled differently
+                 // For now, assuming it's found or this part is adjusted.
+            } else if (!noBetsMessage) {
+                console.error("No bets message element not found");
+                // return; // Or create it dynamically
+            }
+
+
+            container.innerHTML = ''; // Clear previous bets
+
+            const betsToDisplay = placedBets.filter(bet => {
+                if (currentMyBetsFilter === 'open') {
+                    return bet.status === 'Open';
+                } else if (currentMyBetsFilter === 'settled') {
+                    // For simulation, let's assume some bets might become "Settled" later
+                    // For now, this will be empty unless we manually change a bet's status
+                    return bet.status !== 'Open';
+                }
+                return true;
+            }).sort((a, b) => new Date(b.datePlaced) - new Date(a.datePlaced));
+
+            const actualNoBetsMessageElement = document.getElementById('no-bets-message'); // Re-fetch in case it was cleared
+
+            if (betsToDisplay.length === 0) {
+                if (actualNoBetsMessageElement) {
+                    actualNoBetsMessageElement.style.display = 'block';
+                    container.appendChild(actualNoBetsMessageElement);
+                } else {
+                    // If it doesn't exist, create and append it
+                    const tempNoBetsMsg = document.createElement('p');
+                    tempNoBetsMsg.id = 'no-bets-message';
+                    tempNoBetsMsg.className = 'text-gray-400';
+                    tempNoBetsMsg.textContent = 'No bets to display in this section.';
+                    container.appendChild(tempNoBetsMsg);
+                }
+                return;
+            } else {
+                if (actualNoBetsMessageElement) {
+                    actualNoBetsMessageElement.style.display = 'none';
+                }
+            }
+
+            betsToDisplay.forEach(bet => {
+                const betCard = document.createElement('div');
+                betCard.className = 'event-card p-3 mb-3'; // Re-use event-card styling, add margin
+
+                let itemsHtml = '<ul class="list-disc list-inside pl-1 text-sm space-y-1">';
+                bet.items.forEach(item => {
+                    itemsHtml += `<li>${item.detailSelection || item.selectionName} (${item.betType} @ ${item.odds.toFixed(2)}) - ${item.eventName}</li>`;
+                });
+                itemsHtml += '</ul>';
+
+                const formattedDate = new Date(bet.datePlaced).toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' });
+                // Simulate some settled bets for testing display
+                // if (placedBets.indexOf(bet) % 3 === 1) bet.status = "Won"; // Test data
+                // if (placedBets.indexOf(bet) % 3 === 2) bet.status = "Lost"; // Test data
+
+                let statusColor = 'text-yellow-400'; // Open
+                if (bet.status === 'Won') statusColor = 'text-emerald-400';
+                if (bet.status === 'Lost') statusColor = 'text-red-400';
+
+
+                betCard.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="text-md font-semibold">${bet.type === 'parlay' ? 'Parlay Bet' : 'Single Bet'} <span class="${statusColor}">(${bet.status})</span></h4>
+                        <span class="text-xs text-gray-400">${formattedDate}</span>
+                    </div>
+                    ${itemsHtml}
+                    <div class="mt-2 pt-2 border-t border-gray-700 text-xs space-y-0.5">
+                        <p>Stake: $${bet.totalStake.toFixed(2)}</p>
+                        ${bet.type === 'parlay' ? `<p>Total Odds: @ ${bet.totalOdds.toFixed(2)}</p>` : ''}
+                        <p class="font-semibold">Potential Winnings: $${bet.potentialWinnings.toFixed(2)}</p>
+                        ${bet.status !== 'Open' ? `<p class="font-bold ${statusColor}">Result: ${bet.status === 'Won' ? `Won $${bet.potentialWinnings.toFixed(2)}` : (bet.status === 'Lost' ? 'Lost' : bet.status)}</p>` : ''}
+                    </div>
+                `;
+                container.appendChild(betCard);
+            });
+        }
     </script>
 </body>
 </html>
